@@ -2,14 +2,18 @@
 //api will be called from elsewhere and have the express app passed in so we can define routes here.
 //dotenv is a module that will load the variables in our env file for us. The .config method handles this importing.
 require('dotenv').config();
+
 //import mongoose
 const mongoose = require('mongoose');
 //connect to our database using mongoose
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+
 //also create a vanilla mongoclient to search specific collections.
 const { MongoClient } = require("mongodb");
 // Create a new MongoClient
 const client = new MongoClient(process.env.MONGO_URI);
+// We need this to convert string id's back into a mongodb object
+const ObjectId = require('mongodb').ObjectId
 
 
 //define our schema for an issue, this is the basic layout. MongoDB will add the _id for us.
@@ -31,13 +35,27 @@ module.exports = function (app) {
   app.route('/api/issues/:project')
     //this is a bit awkward but we have to use the vanilla mongoDB driver to search in specific collections.
     .get(function (req, res){
+      let query_open = req.query.open; //extract open from url query
+      let query_assigned_to = req.query.assigned_to; //extract assigned to from url query
+      let searchQuery = {} //set query to empty object, we must pass in an empty object if no query is provided
+      const defineQuery = () => {
+        //check if open query is provided and pass it in//
+        if (query_open !== undefined) { 
+          //convert value from string to a real boolean (url query is string format)//
+          searchQuery.open = query_open == 'true' ? true : 'false' ? false : true;
+        } //if assigned_to has been defined it will be passed into the search query as well.
+        if (query_assigned_to !== undefined) {
+          searchQuery.assigned_to = query_assigned_to;
+        } //run the function we just defined//
+      }; defineQuery();
+      //get name of the project (collection) we need to search
       let project = req.params.project;
       async function getWholeProject() {
         try {
           // Connect the client to the server, using the vanilla mongoDB drivers here.
           await client.connect();
           // Connect to specified db and specified collection (:project param from url) and return everything in an array//
-          await client.db("Issue_DB").collection(project).find({}).toArray()
+          await client.db("Issue_DB").collection(project).find(searchQuery).toArray()
           .then(data => { //note that .then only takes the data, you MUST NOT define err here, only data!!
             res.json(data)
           }).catch(console.error) //errors go in the .catch
@@ -88,7 +106,28 @@ module.exports = function (app) {
 
     .put(function (req, res){
       let project = req.params.project;
-      // console.log(project)
+      console.log(req.body)
+      let idToUpdate = req.body._id;
+      async function findNupdate() {
+        try {
+          // Connect the client to the server, using the vanilla mongoDB drivers here.
+          await client.connect();
+          // Find one using the _id field (using ObjectId to convert string to mdb id object), then update it //
+          await client.db("Issue_DB").collection(project).findOneAndUpdate({ _id: ObjectId(idToUpdate) }, { 
+            $set: { //these values will be set/updated
+              assigned_to: 'Brownnoser',
+              updated_on: new Date()
+            }
+          })
+          .then(data => { //note that .then only takes the data, you MUST NOT define err here, only data!!
+            res.json(data)
+          }).catch(console.error) //errors go in the .catch
+        } finally {
+          // Ensures that the client will close when you finish/error
+          await client.close();
+        }
+      } //call the run function we defined above//
+      findNupdate().catch(console.dir);
     })
     
 
