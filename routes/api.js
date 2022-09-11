@@ -80,6 +80,12 @@ module.exports = function (app) {
       //we will have to post to a collection with this project name inside the database.
       let project = req.params.project;
       let data = req.body
+      console.log(data)
+      //check if any required fields are missing somehow//
+      if(!req.body.issue_title || !req.body.issue_text || !req.body.created_by){
+        res.json({ error: 'required field(s) missing' })
+        return
+      }
       //create a new issue//
       const createAndSaveNewIssue = (data, project) => {
         //first set the collection to whatever project name is passed in project variable.
