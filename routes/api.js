@@ -15,6 +15,14 @@ const client = new MongoClient(process.env.MONGO_URI);
 // We need this to convert string id's back into a mongodb object
 const ObjectId = require('mongodb').ObjectId
 
+//used to weed out empty entries from the update object later on
+const removeEmptyFromObj = (obj) => {
+  Object.keys(obj).forEach(key => {
+    if (obj[key] === ''){
+      delete obj[key];
+    }
+  })
+}
 
 //define our schema for an issue, this is the basic layout. MongoDB will add the _id for us.
 let issueSchema = new mongoose.Schema({
@@ -105,19 +113,24 @@ module.exports = function (app) {
     
 
     .put(function (req, res){
-      let project = req.params.project;
-      console.log(req.body)
-      let idToUpdate = req.body._id;
+      //create the update object to pass in our update call
+      let project = req.params.project; // pass this in as the collection name to update
+      let updates = req.body   //get the data from form
+      let idToUpdate = req.body._id; //save id to separate var
+      delete updates._id; //must be removed we cannot update this entry in mongoDB
+      updates.updated_on = new Date() //add new updated time
+      updates.open === 'false' ? updates.open = false : updates.open = true; //convert string to boolean
+      removeEmptyFromObj(updates) // get rid of all '' entries to prevent data deletion from db
+      console.log(updates)
+
+      //use vanilla mongoDB drivers to find and update one (vanilla lets us select the collection)
       async function findNupdate() {
         try {
           // Connect the client to the server, using the vanilla mongoDB drivers here.
           await client.connect();
           // Find one using the _id field (using ObjectId to convert string to mdb id object), then update it //
           await client.db("Issue_DB").collection(project).findOneAndUpdate({ _id: ObjectId(idToUpdate) }, { 
-            $set: { //these values will be set/updated
-              assigned_to: 'Brownnoser',
-              updated_on: new Date()
-            }
+            $set: updates
           })
           .then(data => { //note that .then only takes the data, you MUST NOT define err here, only data!!
             res.json(data)
@@ -132,8 +145,24 @@ module.exports = function (app) {
     
 
     .delete(function (req, res){
+      //get the collection and the id for deleting
       let project = req.params.project;
-      // console.log(project)
+      let idToDelete = req.body._id;
+      console.log('deleting :', idToDelete)
+      
+      //use vanilla mongoDB to once again select the collection and delete one//
+      async function findNdelete() {
+        try {
+          await client.connect();
+          await client.db("Issue_DB").collection(project).findOneAndDelete({ _id: ObjectId(idToDelete) })
+          .then(data => {
+            res.json(data)
+          }).catch(console.error)
+        } finally {
+          await client.close();
+        }
+      }
+      findNdelete().catch(console.dir)
     });
     
 };
