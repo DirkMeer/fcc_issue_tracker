@@ -32,16 +32,18 @@ const removeEmptyFromObj = (obj) => {
 
 //define our schema for an issue, this is the basic layout. MongoDB will add the _id for us.
 let issueSchema = new mongoose.Schema({
-    issue_title: {type: String, required: true},
-    issue_text: {type: String, required: true},
-    created_on: Date,
-    updated_on: Date,
-    created_by: {type: String, required: true},
-    assigned_to: String,
-    open: Boolean,
-    status_text: String
+  issue_title: {type: String, required: true},
+  issue_text: {type: String, required: true},
+  created_by : {type: String, required: true},
+  assigned_to : String,
+  status_text : String,
+  open: {type: Boolean, required: true},
+  created_on: {type: Date, required: true},
+  updated_on: {type: Date, required: true},
+  project: String
 })
-//normally we would call the model here, but we do that in the function as we need to dynamically adjust the collection name first.
+//model//
+const Issue = mongoose.model('Issue', issueSchema)
 
 
 module.exports = function (app) {
@@ -102,8 +104,8 @@ module.exports = function (app) {
         let newIssue = new Issue({
             issue_title: data.issue_title,
             issue_text: data.issue_text,
-            created_on: new Date(),
-            updated_on: new Date(),
+            created_on: addHours(1),
+            updated_on: addHours(1),
             created_by: data.created_by,
             assigned_to: data.assigned_to ? data.assigned_to : '',
             open: true,
