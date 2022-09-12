@@ -111,11 +111,46 @@ module.exports = function (app) {
     
 
     .put(function (req, res){
-      let project = req.params.project;
-      //we need at least the key and 1 more property. Can test amount of properties with Object.keys(objname).length
-      if(Object.keys(req.body).length > 2){
-        res.json({ error: 'no update field(s) sent', '_id': _id })
-      }
+      //create the update object to pass in our update call
+      let project = req.params.project; // pass this in as the collection name to update
+      let updates = req.body   //get the data from form
+      let idToUpdate = req.body._id; //save id to separate var
+      console.log("id to update: ", idToUpdate)
+      delete updates._id; //must be removed we cannot update this entry in mongoDB
+      updates.updated_on = addHours(1) //add new updated time
+      updates.open === 'false' ? updates.open = false : updates.open = true; //convert string to boolean
+      removeEmptyFromObj(updates) // get rid of all '' entries to prevent data deletion from db
+
+      //check for missing values
+      let checkForMissing = (updates) => {
+        console.log(updates)
+        if (idToUpdate === undefined){
+          res.json({ error: 'missing _id' })
+          return
+        } else if (!('issue_title' in updates) && !('issue_text' in updates) && !('created_by' in updates) && !('assigned_to' in updates) && !('status_text' in updates) && !('open' in updates)){
+          res.json({ error: 'no update field(s) sent', '_id': idToUpdate })
+          return
+        }
+      }; checkForMissing(updates);
+
+      //use vanilla mongoDB drivers to find and update one (vanilla lets us select the collection)
+      async function findNupdate() {
+        try {
+          // Connect the client to the server, using the vanilla mongoDB drivers here.
+          await client.connect();
+          // Find one using the _id field (using ObjectId to convert string to mdb id object), then update it //
+          await client.db("Issue_DB").collection(project).findOneAndUpdate({ _id: ObjectId(idToUpdate) }, { 
+            $set: updates
+          })
+          .then(data => { //note that .then only takes the data, you MUST NOT define err here, only data!!
+            res.json({ result: 'successfully updated', '_id': idToUpdate })
+          }).catch(console.error) //errors go in the .catch
+        } finally {
+          // Ensures that the client will close when you finish/error
+          await client.close();
+        }
+      } //call the run function we defined above//
+      findNupdate().catch(console.dir);
     })
     
 
