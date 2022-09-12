@@ -1,0 +1,103 @@
+Your app is listening on port 3000
+{
+  issue_title: 'Faux Issue Title',
+  issue_text: 'Functional Test - Required Fields Only',
+  created_by: 'fCC'
+}
+{
+  issue_title: 'Faux Issue Title 2',
+  issue_text: 'Functional Test - Every field filled in',
+  created_by: 'fCC',
+  assigned_to: 'Chai and Mocha'
+}
+{ created_by: 'fCC' }
+{
+  issue_text: 'Get Issues Test',
+  created_by: 'fCC',
+  issue_title: 'Faux Issue 1'
+}
+{
+  issue_text: 'Get Issues Test',
+  created_by: 'fCC',
+  issue_title: 'Faux Issue 2'
+}
+{
+  issue_text: 'Get Issues Test',
+  created_by: 'fCC',
+  issue_title: 'Faux Issue 3'
+}
+{
+  issue_title: 'To be Filtered',
+  issue_text: 'Filter Issues Test',
+  created_by: 'Alice',
+  assigned_to: 'Bob'
+}
+{
+  issue_title: 'To be Filtered',
+  issue_text: 'Filter Issues Test',
+  created_by: 'Alice',
+  assigned_to: 'Bob'
+}
+{
+  issue_title: 'To be Filtered',
+  issue_text: 'Filter Issues Test',
+  created_by: 'Alice',
+  assigned_to: 'Eric'
+}
+{
+  issue_title: 'To be Filtered',
+  issue_text: 'Filter Issues Test',
+  created_by: 'Carol',
+  assigned_to: 'Eric'
+}
+{
+  issue_title: 'Issue to be Updated',
+  issue_text: 'Functional Test - Put target',
+  created_by: 'fCC'
+}
+{
+  issue_text: 'New Issue Text',
+  updated_on: 2022-09-12T08:08:19.985Z,
+  open: true
+}
+TypeError: Cannot read properties of undefined (reading 'issue_title')
+    at checkForMissing (/home/runner/boilerplate-project-issuetracker/routes/api.js:137:28)
+    at /home/runner/boilerplate-project-issuetracker/routes/api.js:141:10
+    at Layer.handle [as handle_request] (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/route.js:137:13)
+    at next (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/route.js:131:14)
+    at next (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/route.js:131:14)
+    at Route.dispatch (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/route.js:112:3)
+    at Layer.handle [as handle_request] (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/layer.js:95:5)
+    at /home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/index.js:281:22
+    at param (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/index.js:354:14)
+{ updated_on: 2022-09-12T08:08:20.217Z, open: true }
+{ updated_on: 2022-09-12T08:08:20.429Z, open: true }
+TypeError: Cannot read properties of undefined (reading 'issue_title')
+    at checkForMissing (/home/runner/boilerplate-project-issuetracker/routes/api.js:137:28)
+    at /home/runner/boilerplate-project-issuetracker/routes/api.js:141:10
+    at Layer.handle [as handle_request] (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/route.js:137:13)
+    at next (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/route.js:131:14)
+    at next (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/route.js:131:14)
+    at Route.dispatch (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/route.js:112:3)
+    at Layer.handle [as handle_request] (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/layer.js:95:5)
+    at /home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/index.js:281:22
+    at param (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/router/index.js:354:14)
+{
+  issue_title: 'Issue to be Deleted',
+  issue_text: 'Functional Test - Delete target',
+  created_by: 'fCC'
+}
+Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+    at new NodeError (node:internal/errors:371:5)
+    at ServerResponse.setHeader (node:_http_outgoing:576:11)
+    at ServerResponse.header (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/response.js:771:10)
+    at ServerResponse.send (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/response.js:170:12)
+    at ServerResponse.json (/home/runner/boilerplate-project-issuetracker/node_modules/express/lib/response.js:267:15)
+    at /home/runner/boilerplate-project-issuetracker/routes/api.js:153:17
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async findNupdate (/home/runner/boilerplate-project-issuetracker/routes/api.js:149:11) {
+  code: 'ERR_HTTP_HEADERS_SENT'
+}
+requested

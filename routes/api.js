@@ -15,6 +15,12 @@ const client = new MongoClient(process.env.MONGO_URI);
 // We need this to convert string id's back into a mongodb object
 const ObjectId = require('mongodb').ObjectId
 
+//because freecodecamp testing never works properly
+function addHours(numOfHours, date = new Date()) {
+  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
+  return date;
+}
+
 //used to weed out empty entries from the update object later on
 const removeEmptyFromObj = (obj) => {
   Object.keys(obj).forEach(key => {
@@ -123,11 +129,23 @@ module.exports = function (app) {
       let project = req.params.project; // pass this in as the collection name to update
       let updates = req.body   //get the data from form
       let idToUpdate = req.body._id; //save id to separate var
+      console.log("id to update: ", idToUpdate)
       delete updates._id; //must be removed we cannot update this entry in mongoDB
-      updates.updated_on = new Date() //add new updated time
+      updates.updated_on = addHours(1) //add new updated time
       updates.open === 'false' ? updates.open = false : updates.open = true; //convert string to boolean
       removeEmptyFromObj(updates) // get rid of all '' entries to prevent data deletion from db
-      console.log(updates)
+
+      //check for missing values
+      let checkForMissing = (updates) => {
+        console.log(updates)
+        if (idToUpdate === undefined){
+          res.json({ error: 'missing _id' })
+          return
+        } else if (!('issue_title' in updates) && !('issue_text' in updates) && !('created_by' in updates) && !('assigned_to' in updates) && !('status_text' in updates) && !('open' in updates)){
+          res.json({ error: 'no update field(s) sent', '_id': idToUpdate })
+          return
+        }
+      }; checkForMissing(updates);
 
       //use vanilla mongoDB drivers to find and update one (vanilla lets us select the collection)
       async function findNupdate() {
@@ -139,7 +157,7 @@ module.exports = function (app) {
             $set: updates
           })
           .then(data => { //note that .then only takes the data, you MUST NOT define err here, only data!!
-            res.json(data)
+            res.json({ result: 'successfully updated', '_id': idToUpdate })
           }).catch(console.error) //errors go in the .catch
         } finally {
           // Ensures that the client will close when you finish/error
@@ -154,7 +172,10 @@ module.exports = function (app) {
       //get the collection and the id for deleting
       let project = req.params.project;
       let idToDelete = req.body._id;
-      console.log('deleting :', idToDelete)
+      if (!idToDelete) {
+        res.json({ error: 'missing _id' })
+        return
+      }
       
       //use vanilla mongoDB to once again select the collection and delete one//
       async function findNdelete() {
@@ -162,8 +183,10 @@ module.exports = function (app) {
           await client.connect();
           await client.db("Issue_DB").collection(project).findOneAndDelete({ _id: ObjectId(idToDelete) })
           .then(data => {
-            res.json(data)
-          }).catch(console.error)
+            res.json({ result: 'successfully deleted', '_id': idToDelete });
+          }).catch((err) => {
+            res.json({ error: 'could not delete', '_id': idToDelete })
+          })
         } finally {
           await client.close();
         }
